@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Versla – Join a shared list</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #1f2328; background: #fff; max-width: 480px; margin: 0 auto; padding: 48px 20px; text-align: center; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    p { margin: 0.75rem 0; }
+    .button { display: block; margin: 1.5rem 0 0.75rem; padding: 14px 20px; border-radius: 28px; background: #a8009a; color: #fff; font-size: 1.05rem; font-weight: 600; text-decoration: none; }
+    .secondary { display: block; padding: 12px 20px; border-radius: 28px; border: 1px solid #c9c2c7; color: #1f2328; text-decoration: none; }
+    .code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.4rem; letter-spacing: 2px; background: #f3edf1; border-radius: 12px; padding: 10px 16px; display: inline-block; margin-top: 0.25rem; }
+    .muted { color: #5c5560; font-size: 0.95rem; }
+    [hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Versla</h1>
+  <p id="lead">Someone shared a shopping list with you.</p>
+
+  <div id="invite" hidden>
+    <a id="open" class="button" href="#">Open the list in Versla</a>
+    <a id="store" class="secondary" href="https://play.google.com/store/apps/details?id=anthonymirely.gmail.com.versla">Get Versla on Google Play</a>
+    <p class="muted" id="manual">Or open Versla, tap New list, then “Have a share code?”, and enter:</p>
+    <p><span class="code" id="code"></span></p>
+  </div>
+
+  <p id="missing" hidden>This link has no share code in it. Ask the person who sent it to share the list again.</p>
+
+  <script>
+    // Text in the four languages the app speaks, chosen from the browser's language.
+    var TEXT = {
+      en: { lead: 'Someone shared a shopping list with you.', open: 'Open the list in Versla', store: 'Get Versla on Google Play',
+            manual: 'Or open Versla, tap New list, then “Have a share code?”, and enter:',
+            missing: 'This link has no share code in it. Ask the person who sent it to share the list again.' },
+      es: { lead: 'Alguien ha compartido una lista de la compra contigo.', open: 'Abrir la lista en Versla', store: 'Descargar Versla en Google Play',
+            manual: 'O abre Versla, toca Nueva lista, luego «¿Tienes un código?», y escribe:',
+            missing: 'Este enlace no contiene ningún código. Pide a quien te lo envió que comparta la lista de nuevo.' },
+      fr: { lead: 'Quelqu’un a partagé une liste de courses avec vous.', open: 'Ouvrir la liste dans Versla', store: 'Obtenir Versla sur Google Play',
+            manual: 'Ou ouvrez Versla, touchez Nouvelle liste, puis « Vous avez un code de partage ? », et saisissez :',
+            missing: 'Ce lien ne contient pas de code de partage. Demandez à la personne qui vous l’a envoyé de partager la liste de nouveau.' },
+      pt: { lead: 'Alguém compartilhou uma lista de compras com você.', open: 'Abrir a lista no Versla', store: 'Baixar o Versla no Google Play',
+            manual: 'Ou abra o Versla, toque em Nova lista, depois em “Tem um código?”, e digite:',
+            missing: 'Este link não tem um código. Peça a quem enviou para compartilhar a lista de novo.' }
+    };
+    var language = (navigator.language || 'en').slice(0, 2).toLowerCase();
+    var text = TEXT[language] || TEXT.en;
+    document.documentElement.lang = TEXT[language] ? language : 'en';
+    ['lead', 'open', 'store', 'manual', 'missing'].forEach(function (id) { document.getElementById(id).textContent = text[id]; });
+
+    // A share code is 11 letters and digits. Anything else in the address is ignored, and
+    // nothing from the address is ever put on the page as HTML.
+    var code = (new URLSearchParams(location.search).get('listId') || '').toUpperCase();
+    if (/^[A-Z0-9]{11}$/.test(code)) {
+      document.getElementById('code').textContent = code;
+      // Asks Android to hand this same address to the Versla app, and to go to its Play page
+      // when the app is not installed. The address must end in the code: the app reads it there.
+      var store = 'https://play.google.com/store/apps/details?id=anthonymirely.gmail.com.versla';
+      document.getElementById('open').href =
+        'intent://anthony4512.github.io/versla-site/join.html?listId=' + code +
+        '#Intent;scheme=https;package=anthonymirely.gmail.com.versla;S.browser_fallback_url=' + encodeURIComponent(store) + ';end';
+      document.getElementById('invite').hidden = false;
+    } else {
+      document.getElementById('missing').hidden = false;
+    }
+  </script>
+</body>
+</html>
